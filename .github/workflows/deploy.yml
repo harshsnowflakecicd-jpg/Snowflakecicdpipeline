@@ -37,7 +37,7 @@ jobs:
           chmod 600 "$RUNNER_TEMP/rsa_key.p8"
           export SNOWFLAKE_PRIVATE_KEY_PATH="$RUNNER_TEMP/rsa_key.p8"
           set +e
-          schemachange deploy --config-folder . -a "$SNOWFLAKE_ACCOUNT" -u "$SNOWFLAKE_USER" -r "$SNOWFLAKE_ROLE" -w "$SNOWFLAKE_WAREHOUSE" -d "$SNOWFLAKE_DATABASE" --vars '{"env":"DEV"}' > "$RUNNER_TEMP/out.txt" 2>&1
+          schemachange deploy --config-folder . -a "$SNOWFLAKE_ACCOUNT" -u "$SNOWFLAKE_USER" -r "$SNOWFLAKE_ROLE" -w "$SNOWFLAKE_WAREHOUSE" -d "$SNOWFLAKE_DATABASE" -c DEPLOY_META.SCHEMACHANGE.CHANGE_HISTORY_DEV --vars '{"env":"DEV"}' > "$RUNNER_TEMP/out.txt" 2>&1
           code=$?
           cat "$RUNNER_TEMP/out.txt"
           if [ $code -ne 0 ]; then
@@ -78,7 +78,7 @@ jobs:
           chmod 600 "$RUNNER_TEMP/rsa_key.p8"
           export SNOWFLAKE_PRIVATE_KEY_PATH="$RUNNER_TEMP/rsa_key.p8"
           set +e
-          schemachange deploy --config-folder . -a "$SNOWFLAKE_ACCOUNT" -u "$SNOWFLAKE_USER" -r "$SNOWFLAKE_ROLE" -w "$SNOWFLAKE_WAREHOUSE" -d "$SNOWFLAKE_DATABASE" --vars '{"env":"PROD"}' > "$RUNNER_TEMP/out.txt" 2>&1
+          schemachange deploy --config-folder . -a "$SNOWFLAKE_ACCOUNT" -u "$SNOWFLAKE_USER" -r "$SNOWFLAKE_ROLE" -w "$SNOWFLAKE_WAREHOUSE" -d "$SNOWFLAKE_DATABASE" -c DEPLOY_META.SCHEMACHANGE.CHANGE_HISTORY_PROD --vars '{"env":"PROD"}' > "$RUNNER_TEMP/out.txt" 2>&1
           code=$?
           cat "$RUNNER_TEMP/out.txt"
           if [ $code -ne 0 ]; then
