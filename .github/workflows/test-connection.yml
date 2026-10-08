@@ -1,0 +1,62 @@
+name: Test Snowflake Connection
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to test"
+        type: choice
+        options: [dev, prod]
+        default: dev
+
+jobs:
+  test-connection:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Test connection
+        env:
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_ROLE: ${{ vars.SNOWFLAKE_ROLE }}
+          SNOWFLAKE_WAREHOUSE: ${{ vars.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: ${{ vars.SNOWFLAKE_DATABASE }}
+          SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+        run: |
+          echo "$SNOWFLAKE_PRIVATE_KEY" > "$RUNNER_TEMP/rsa_key.p8"
+          chmod 600 "$RUNNER_TEMP/rsa_key.p8"
+          python - <<'EOF'
+          import os
+          import snowflake.connector
+
+          conn = snowflake.connector.connect(
+              account=os.environ["SNOWFLAKE_ACCOUNT"],
+              user=os.environ["SNOWFLAKE_USER"],
+              role=os.environ["SNOWFLAKE_ROLE"],
+              warehouse=os.environ["SNOWFLAKE_WAREHOUSE"],
+              database=os.environ["SNOWFLAKE_DATABASE"],
+              private_key_file=os.path.join(os.environ["RUNNER_TEMP"], "rsa_key.p8"),
+          )
+          cur = conn.cursor()
+          cur.execute(
+              "SELECT CURRENT_USER(), CURRENT_ROLE(), CURRENT_WAREHOUSE(), CURRENT_DATABASE()"
+          )
+          user, role, wh, db = cur.fetchone()
+          print(f"Connected OK -> user={user} role={role} warehouse={wh} database={db}")
+          cur.close()
+          conn.close()
+          EOF
+
+      - name: Remove key file
+        if: always()
+        run: rm -f "$RUNNER_TEMP/rsa_key.p8"
