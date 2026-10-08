@@ -1,0 +1,8 @@
+__pycache__/
+.venv/
+*.pyc
+.env
+*.p8
+*.pem
+rsa_key*
+.sqlfluff-cache/

@@ -1,0 +1,8 @@
+[sqlfluff]
+dialect = snowflake
+templater = placeholder
+exclude_rules = LT05, AM04
+
+[sqlfluff:templater:placeholder]
+param_style = jinja
+env = DEV

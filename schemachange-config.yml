@@ -1,0 +1,15 @@
+config-version: 1
+
+root-folder: migrations
+modules-folder: null
+
+# Where schemachange records which scripts have run (created on first deploy)
+change-history-table: DEPLOY_META.SCHEMACHANGE.CHANGE_HISTORY
+create-change-history-table: true
+
+# Available inside scripts as {{ env }} etc.
+vars:
+  env: DEV
+
+autocommit: false
+verbose: false
