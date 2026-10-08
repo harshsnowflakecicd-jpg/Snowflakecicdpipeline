@@ -34,8 +34,16 @@ jobs:
           SNOWFLAKE_DATABASE: ${{ vars.SNOWFLAKE_DATABASE_DEV }}
           SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
         run: |
+          missing=0
+          for v in SNOWFLAKE_ACCOUNT SNOWFLAKE_USER SNOWFLAKE_ROLE SNOWFLAKE_WAREHOUSE SNOWFLAKE_DATABASE SNOWFLAKE_PRIVATE_KEY; do
+            if [ -z "${!v}" ]; then
+              echo "::error title=Empty value::$v is EMPTY in this job - check the Secrets/Variables tab and the environment name"
+              missing=1
+            fi
+          done
+          [ "$missing" -eq 0 ] || exit 1
           echo "$SNOWFLAKE_PRIVATE_KEY" > "$RUNNER_TEMP/rsa_key.p8"
           chmod 600 "$RUNNER_TEMP/rsa_key.p8"
           export SNOWFLAKE_PRIVATE_KEY_PATH="$RUNNER_TEMP/rsa_key.p8"
-          schemachange deploy --config-folder . -a "$SNOWFLAKE_ACCOUNT" -u "$SNOWFLAKE_USER" -r "$SNOWFLAKE_ROLE" -w "$SNOWFLAKE_WAREHOUSE" -d "$SNOWFLAKE_DATABASE" --dry-run \
+          schemachange deploy --config-folder . -a "$SNOWFLAKE_ACCOUNT" -u "$SNOWFLAKE_USER" -r "$SNOWFLAKE_ROLE" -w "$SNOWFLAKE_WAREHOUSE" -d "$SNOWFLAKE_DATABASE" -c DEPLOY_META.SCHEMACHANGE.CHANGE_HISTORY_DEV --dry-run \
             --vars '{"env":"DEV"}'
