@@ -25,11 +25,19 @@ jobs:
           SNOWFLAKE_DATABASE: ${{ vars.SNOWFLAKE_DATABASE }}
           SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
         run: |
+          missing=0
+          for v in SNOWFLAKE_ACCOUNT SNOWFLAKE_USER SNOWFLAKE_ROLE SNOWFLAKE_WAREHOUSE SNOWFLAKE_DATABASE SNOWFLAKE_PRIVATE_KEY; do
+            if [ -z "${!v}" ]; then
+              echo "::error title=Empty value::$v is EMPTY in this job - check the Secrets/Variables tab and the environment name"
+              missing=1
+            fi
+          done
+          [ "$missing" -eq 0 ] || exit 1
           echo "$SNOWFLAKE_PRIVATE_KEY" > "$RUNNER_TEMP/rsa_key.p8"
           chmod 600 "$RUNNER_TEMP/rsa_key.p8"
           export SNOWFLAKE_PRIVATE_KEY_PATH="$RUNNER_TEMP/rsa_key.p8"
           set +e
-          schemachange deploy --config-folder . --vars '{"env":"DEV"}' > "$RUNNER_TEMP/out.txt" 2>&1
+          schemachange deploy --config-folder . -a "$SNOWFLAKE_ACCOUNT" -u "$SNOWFLAKE_USER" -r "$SNOWFLAKE_ROLE" -w "$SNOWFLAKE_WAREHOUSE" -d "$SNOWFLAKE_DATABASE" --vars '{"env":"DEV"}' > "$RUNNER_TEMP/out.txt" 2>&1
           code=$?
           cat "$RUNNER_TEMP/out.txt"
           if [ $code -ne 0 ]; then
@@ -58,11 +66,19 @@ jobs:
           SNOWFLAKE_DATABASE: ${{ vars.SNOWFLAKE_DATABASE }}
           SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
         run: |
+          missing=0
+          for v in SNOWFLAKE_ACCOUNT SNOWFLAKE_USER SNOWFLAKE_ROLE SNOWFLAKE_WAREHOUSE SNOWFLAKE_DATABASE SNOWFLAKE_PRIVATE_KEY; do
+            if [ -z "${!v}" ]; then
+              echo "::error title=Empty value::$v is EMPTY in this job - check the Secrets/Variables tab and the environment name"
+              missing=1
+            fi
+          done
+          [ "$missing" -eq 0 ] || exit 1
           echo "$SNOWFLAKE_PRIVATE_KEY" > "$RUNNER_TEMP/rsa_key.p8"
           chmod 600 "$RUNNER_TEMP/rsa_key.p8"
           export SNOWFLAKE_PRIVATE_KEY_PATH="$RUNNER_TEMP/rsa_key.p8"
           set +e
-          schemachange deploy --config-folder . --vars '{"env":"PROD"}' > "$RUNNER_TEMP/out.txt" 2>&1
+          schemachange deploy --config-folder . -a "$SNOWFLAKE_ACCOUNT" -u "$SNOWFLAKE_USER" -r "$SNOWFLAKE_ROLE" -w "$SNOWFLAKE_WAREHOUSE" -d "$SNOWFLAKE_DATABASE" --vars '{"env":"PROD"}' > "$RUNNER_TEMP/out.txt" 2>&1
           code=$?
           cat "$RUNNER_TEMP/out.txt"
           if [ $code -ne 0 ]; then
