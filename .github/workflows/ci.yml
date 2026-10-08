@@ -37,5 +37,5 @@ jobs:
           echo "$SNOWFLAKE_PRIVATE_KEY" > "$RUNNER_TEMP/rsa_key.p8"
           chmod 600 "$RUNNER_TEMP/rsa_key.p8"
           export SNOWFLAKE_PRIVATE_KEY_PATH="$RUNNER_TEMP/rsa_key.p8"
-          schemachange deploy --config-folder . --dry-run \
+          schemachange deploy --config-folder . -a "$SNOWFLAKE_ACCOUNT" -u "$SNOWFLAKE_USER" -r "$SNOWFLAKE_ROLE" -w "$SNOWFLAKE_WAREHOUSE" -d "$SNOWFLAKE_DATABASE" --dry-run \
             --vars '{"env":"DEV"}'
