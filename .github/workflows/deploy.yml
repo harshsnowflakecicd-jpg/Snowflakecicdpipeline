@@ -28,7 +28,14 @@ jobs:
           echo "$SNOWFLAKE_PRIVATE_KEY" > "$RUNNER_TEMP/rsa_key.p8"
           chmod 600 "$RUNNER_TEMP/rsa_key.p8"
           export SNOWFLAKE_PRIVATE_KEY_PATH="$RUNNER_TEMP/rsa_key.p8"
-          schemachange deploy --config-folder . --vars '{"env":"DEV"}'
+          set +e
+          schemachange deploy --config-folder . --vars '{"env":"DEV"}' > "$RUNNER_TEMP/out.txt" 2>&1
+          code=$?
+          cat "$RUNNER_TEMP/out.txt"
+          if [ $code -ne 0 ]; then
+            echo "::error title=schemachange failed::$(tail -n 15 "$RUNNER_TEMP/out.txt" | sed 's/%/%25/g' | tr '\n' ' ')"
+          fi
+          exit $code
 
   deploy-prod:
     needs: deploy-dev
@@ -54,4 +61,11 @@ jobs:
           echo "$SNOWFLAKE_PRIVATE_KEY" > "$RUNNER_TEMP/rsa_key.p8"
           chmod 600 "$RUNNER_TEMP/rsa_key.p8"
           export SNOWFLAKE_PRIVATE_KEY_PATH="$RUNNER_TEMP/rsa_key.p8"
-          schemachange deploy --config-folder . --vars '{"env":"PROD"}'
+          set +e
+          schemachange deploy --config-folder . --vars '{"env":"PROD"}' > "$RUNNER_TEMP/out.txt" 2>&1
+          code=$?
+          cat "$RUNNER_TEMP/out.txt"
+          if [ $code -ne 0 ]; then
+            echo "::error title=schemachange failed::$(tail -n 15 "$RUNNER_TEMP/out.txt" | sed 's/%/%25/g' | tr '\n' ' ')"
+          fi
+          exit $code
